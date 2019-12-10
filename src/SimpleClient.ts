@@ -3,7 +3,8 @@ import {
   LinguaWebcaRequest,
   LinguaWebcaResponse,
   LinguaWebcaStore,
-  LinguaWebcaVerb
+  LinguaWebcaVerb,
+  LinguaWebcaEventHandler
 } from './interfaces'
 
 export function createSimpleClient(store: LinguaWebcaStore): LinguaWebcaClient {
@@ -38,6 +39,21 @@ export function createSimpleClient(store: LinguaWebcaStore): LinguaWebcaClient {
 
     get<ResBody = any>(uri: string): Promise<ResBody> {
       return request<ResBody>(uri, 'GET')
+    },
+
+    on<EvtType = any>(
+      uri: string,
+      eventHandler: LinguaWebcaEventHandler<EvtType>
+    ): () => void {
+      const req: LinguaWebcaRequest = {
+        eventHandler,
+        uri,
+        verb: 'LISTEN'
+      }
+
+      store(req)
+
+      return () => undefined
     },
 
     put<ResBody = any, ReqBody = any>(

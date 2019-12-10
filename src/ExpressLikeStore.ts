@@ -31,17 +31,26 @@ export class ExpressLikeResponse {
 
   public execute(): Promise<LinguaWebcaResponse> {
     const { query } = parseUri(this.request.uri)
-    return new Promise((ok, fail) => {
+    return new Promise(async (ok, fail) => {
       this.resolve = ok
       this.reject = fail
-      this.route.handler(
-        {
-          ...this.request,
-          params: this.params,
-          query
-        },
-        this
-      )
+      try {
+        await this.route.handler(
+          {
+            ...this.request,
+            params: this.params,
+            query
+          },
+          this
+        )
+      } catch(e) {
+        this.resolve({
+          body: e,
+          code: 500,
+          request: this.request,
+          uri: this.request.uri
+        })
+      }
     })
   }
 

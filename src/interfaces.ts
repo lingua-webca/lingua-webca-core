@@ -1,17 +1,21 @@
 export type URI = string
-export type LinguaWebcaVerb = 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'
+export type LinguaWebcaVerb = 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE' | 'LISTEN'
 export type LinguaWebcaResponseCode = number
 
 export interface LinguaWebcaHeaders {
   readonly [name: string]: string
 }
 
+export type LinguaWebcaEventHandler<T = any> = (evt: T) => void
+
 export interface LinguaWebcaRequest<
   BodyType = any,
-  Headers = LinguaWebcaHeaders
+  Headers = LinguaWebcaHeaders,
+  EvtType = any
 > {
   readonly verb: LinguaWebcaVerb
   readonly uri: URI
+  readonly eventHandler?: LinguaWebcaEventHandler<EvtType>
   readonly headers?: Headers
   readonly body?: BodyType
 }
@@ -44,6 +48,7 @@ export type LinguaWebcaStore<
 export type StoreSwitchFunction = (
   request: LinguaWebcaRequest
 ) => LinguaWebcaStore
+
 export type LinguaWebcaMappingStore = (
   backing: LinguaWebcaStore
 ) => LinguaWebcaStore
@@ -54,6 +59,11 @@ export interface LinguaWebcaClient {
     verb: LinguaWebcaVerb,
     body: ReqBody
   ) => Promise<ResBody>
+
+  readonly on: <EvtType = any>(
+    uri: string,
+    handler: LinguaWebcaEventHandler<EvtType>
+  ) => () => void
 
   readonly get: <ResBody = any>(uri: string) => Promise<ResBody>
 
